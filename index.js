@@ -13,9 +13,10 @@ const {
 } = require("@nut-tree/nut-js");
 const os = require("os");
 
-const CHECK_WORKER_STATS_EVERY_MINUTES = 30;
+const CHECK_WORKER_STATS_EVERY_MINUTES = 13;
 
 async function delay(ms) {
+  console.log(`Awaiting ${ms/1000} seconds`);
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
@@ -31,7 +32,7 @@ async function awaitAndClickOnImage(
 ) {
   await mouse.move({ x: 0, y: 0 });
   console.log("Awaiting for:", imagePath);
-  console.log(`Waiting ${timeoutInSeconds} seconds`);
+  console.log(`Time-out in ${timeoutInSeconds} seconds`);
   const element = await screen.waitFor(imagePath, 1000 * timeoutInSeconds, {
     confidence,
   });
@@ -70,11 +71,11 @@ async function isImagePresent(imagePath, confidence = 0.91) {
 
 async function makeHeroesGoToWork() {
   try {
-    while (await isImagePresent("./images/hero-go-work-button.png", 0.98)) {
+    while (await isImagePresent("./images/hero-go-work-button.png", 0.96)) {
       await awaitAndClickOnImage(
         "./images/hero-go-work-button.png",
         4,
-        0.92,
+        0.96,
         true
       );
       await delay(1000 * 2);
