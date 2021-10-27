@@ -13,7 +13,7 @@ const {
 } = require("@nut-tree/nut-js");
 const os = require("os");
 
-const CHECK_WORKER_STATS_EVERY_MINUTES = 13;
+const CHECK_WORKER_STATS_EVERY_MINUTES = 15;
 
 async function delay(ms) {
   console.log(`Awaiting ${ms/1000} seconds`);
@@ -30,7 +30,7 @@ async function awaitAndClickOnImage(
   confidence = 0.9,
   corner = false
 ) {
-  await mouse.move({ x: 0, y: 0 });
+  //await mouse.move({ x: 0, y: 0 });
   console.log("Awaiting for:", imagePath);
   console.log(`Time-out in ${timeoutInSeconds} seconds`);
   const element = await screen.waitFor(imagePath, 1000 * timeoutInSeconds, {
@@ -51,7 +51,7 @@ async function awaitAndClickOnImage(
   await delay(200);
   await mouse.leftClick();
   console.log("Found and clicked:", imagePath);
-  await mouse.move([{ x: 100, y: 100 }]);
+  //await mouse.move([{ x: 100, y: 100 }]);
 }
 
 async function startPve() {
@@ -124,16 +124,16 @@ async function dragDownHeroSelection() {
       y: top,
     },
   ]);
-  await sleep(1000);
+  await delay(1000);
   const dragArray = [];
-  for (let index = 0; index < 110; index++) {
+  for (let index = 0; index < 90; index++) {
     dragArray.push({
       x: left,
       y: top - index,
     });
   }
   await mouse.drag(dragArray);
-  await delay(600);
+  await delay(2000);
 }
 
 async function playGame() {
@@ -160,7 +160,9 @@ async function putHeroesToWork() {
   await awaitAndClickOnImage("./images/back-to-menu-button.png", 20);
   await delay(1000 * 2);
   await awaitAndClickOnImage("./images/heroes-menu-button.png", 10, 0.92);
+  await delay(1000 * 2);
 
+  await dragDownHeroSelection();
   await dragDownHeroSelection();
   await dragDownHeroSelection();
   await dragDownHeroSelection();
@@ -192,7 +194,7 @@ async function restartGame() {
         await connectWallet();
       else await awaitAndClickOnImage("./images/play-button.png", 30);
 
-      await mouse.move([{ x: 0, y: 0 }]);
+      //await mouse.move([{ x: 0, y: 0 }]);
       await delay(4000);
       if (await isImagePresent("./images/ok-button.png", 0.92)) {
         console.log("Game error. Restarting...");
