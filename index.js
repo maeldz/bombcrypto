@@ -24,6 +24,10 @@ function randomInteger(min, max) {
   return Math.floor(Math.random() * (max - min + 1)) + min;
 }
 
+function logAction(action) {
+  console.log(`======================================== ${action} ========================================`);
+}
+
 async function awaitAndClickOnImage(
   imagePath,
   timeoutInSeconds,
@@ -185,10 +189,13 @@ async function connectWallet() {
 async function restartGame() {
   while (true) {
     try {
-      await delay(1000 * 3);
-      await keyboard.type(Key.F5);
+      await keyboard.pressKey(Key.LeftControl, Key.LeftShift, Key.R)
+      await keyboard.releaseKey(Key.LeftControl, Key.LeftShift, Key.R)
+      
+      // refresh page on MAC
       if (os.platform() === "darwin")
         await awaitAndClickOnImage("./images/mac-restart-button.png", 30);
+      
       await delay(1000 * 7);
       if (await isImagePresent("./images/connect-wallet-button.png"))
         await connectWallet();
@@ -210,20 +217,18 @@ async function restartGame() {
   }
 }
 
-async function checkIfGameAlreadyOpened() {
+async function checkingIfGameIsInMainScreen() {
   try {
-    console.log("Checking if game is already opened...");
     await delay(1000 * 3);
     if (await isImagePresent("./images/start-pve-button.png", 0.92)) {
-      console.log("Game is already opened. Not restarting.");
+      console.log("Game is in main screen.");
       return true;
     }
-
-    console.log("Game is not opened. Restarting...");
+    console.log("Game is NOT in main screen. Restarting...");
     return false;
   } catch (e) {
     console.log(
-      "Something went wrong when checking if game is opened. Restarting..."
+      "Error checking if game is in main screen. Restarting..."
     );
     return false;
   }
@@ -241,6 +246,10 @@ async function checkForWrongWindow() {
       await awaitAndClickOnImage("./images/back-to-menu-button.png", 4, 0.92);
       await delay(1000 * 3);
     }
+    if (await isImagePresent("./images/ok-button.png", 0.92)) {
+      await awaitAndClickOnImage("./images/ok-button.png", 4, 0.92);
+      await delay(1000 * 3);
+    }
     x++;
   }
 }
@@ -248,16 +257,26 @@ async function checkForWrongWindow() {
 (async () => {
   while (true) {
     try {
-      const isGameStartedAlready = await checkIfGameAlreadyOpened();
-      if (!isGameStartedAlready) await restartGame();
+      logAction("Checking if game is on main screen");
+      const isMainScreen = await checkingIfGameIsInMainScreen();
+      
+      if (!isMainScreen) {
+        logAction("Restarting game");
+        await restartGame();
+      }
+      
+      logAction("Starting PVE");
       await startPve();
+
       while (true) {
+        logAction("Putting heroes to work");
         await putHeroesToWork();
+        logAction("Waiting for new map");
         await playGame();
       }
     } catch (e) {
       console.log(e);
-      if (e.message === "Restart game flow") await checkForWrongWindow();
+      await checkForWrongWindow();
       continue;
     }
   }
