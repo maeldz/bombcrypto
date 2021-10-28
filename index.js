@@ -15,9 +15,9 @@ const os = require("os");
 
 const CHECK_WORKER_STATS_EVERY_MINUTES = 15;
 
-async function delay(ms) {
-  console.log(`Awaiting ${ms/1000} seconds`);
-  return new Promise((resolve) => setTimeout(resolve, ms));
+async function delay(seconds) {
+  console.log(`Awaiting ${seconds} seconds`);
+  return new Promise((resolve) => setTimeout(resolve, seconds * 1000));
 }
 
 function randomInteger(min, max) {
@@ -34,7 +34,6 @@ async function awaitAndClickOnImage(
   confidence = 0.9,
   corner = false
 ) {
-  //await mouse.move({ x: 0, y: 0 });
   console.log("Awaiting for:", imagePath);
   console.log(`Time-out in ${timeoutInSeconds} seconds`);
   const element = await screen.waitFor(imagePath, 1000 * timeoutInSeconds, {
@@ -52,10 +51,10 @@ async function awaitAndClickOnImage(
       y: realY,
     },
   ]);
-  await delay(200);
+  await delay(0.1);
   await mouse.leftClick();
+  await delay(0.1);
   console.log("Found and clicked:", imagePath);
-  //await mouse.move([{ x: 100, y: 100 }]);
 }
 
 async function startPve() {
@@ -66,9 +65,10 @@ async function isImagePresent(imagePath, confidence = 0.91) {
   try {
     console.log("checking if image is present:", imagePath);
     await screen.find(imagePath, { confidence });
+    console.log("Found");
     return true;
   } catch (e) {
-    console.error(e);
+    console.log("Not Found");
     return false;
   }
 }
@@ -78,70 +78,52 @@ async function makeHeroesGoToWork() {
     while (await isImagePresent("./images/hero-go-work-button.png", 0.96)) {
       await awaitAndClickOnImage(
         "./images/hero-go-work-button.png",
-        4,
+        3,
         0.96,
         true
       );
-      await delay(1000 * 2);
-      await checkForHouseMissClick();
-      await checkForTimeout();
+      await delay(0.4);
     }
   } catch (error) {
     throw new Error("Restart game flow");
   }
-
-  await delay(1000);
-  await checkForHouseMissClick();
-  await delay(1000);
-  await checkForTimeout();
-}
-
-async function checkForHouseMissClick() {
-  while (await isImagePresent("./images/house.png", 0.92)) {
-    await delay(1000 * 1);
-    await awaitAndClickOnImage("./images/close-button.png", 4, 0.92);
-  }
-}
-async function checkForTimeout() {
-  while (await isImagePresent("./images/timeout.png", 0.96)) {
-    await delay(1000 * 1);
-    await awaitAndClickOnImage("./images/close-button.png", 4, 0.92);
-  }
 }
 
 async function dragDownHeroSelection() {
-  console.log("scrolling down");
-  const element = await screen.waitFor(
-    "./images/hero-selection-drag-bar.png",
-    1000 * 4,
-    {
-      confidence: 0.9,
+  let x = 0;
+  while (x < 4) {
+    const element = await screen.waitFor(
+      "./images/hero-selection-drag-bar.png",
+      1000 * 4,
+      {
+        confidence: 0.9,
+      }
+    );
+  
+    const left = element.left + 100;
+    const top = element.top + 10;
+  
+    await mouse.move([
+      {
+        x: left,
+        y: top,
+      },
+    ]);
+    await delay(0.5);
+    const dragArray = [];
+    for (let index = 0; index < 110; index++) {
+      dragArray.push({
+        x: left,
+        y: top - index,
+      });
     }
-  );
-
-  const left = element.left + 100;
-  const top = element.top + 10;
-
-  await mouse.move([
-    {
-      x: left,
-      y: top,
-    },
-  ]);
-  await delay(1000);
-  const dragArray = [];
-  for (let index = 0; index < 90; index++) {
-    dragArray.push({
-      x: left,
-      y: top - index,
-    });
+    await mouse.drag(dragArray);
+    await delay(2);
+    x++;
   }
-  await mouse.drag(dragArray);
-  await delay(2000);
 }
 
 async function playGame() {
-  await delay(1000);
   while (true) {
     try {
       await awaitAndClickOnImage(
@@ -153,24 +135,23 @@ async function playGame() {
       console.log("New map button wasn't found. Checking heroes..");
       return;
     }
-    await delay(8000);
+    await delay(1);
     console.log("Map defeated! Lets continue.");
     continue;
   }
 }
 
 async function putHeroesToWork() {
-  await delay(1000 * 2);
+  await delay(1);
   await awaitAndClickOnImage("./images/back-to-menu-button.png", 20);
-  await delay(1000 * 2);
+  await delay(1);
   await awaitAndClickOnImage("./images/heroes-menu-button.png", 10, 0.92);
-  await delay(1000 * 2);
+  await delay(1);
 
+  logAction("Scrolling Heroes");
   await dragDownHeroSelection();
-  await dragDownHeroSelection();
-  await dragDownHeroSelection();
-  await dragDownHeroSelection();
-  await dragDownHeroSelection();
+
+  logAction("Clicking work buttons");
   await makeHeroesGoToWork();
 
   await awaitAndClickOnImage("./images/close-button.png", 10);
@@ -178,11 +159,11 @@ async function putHeroesToWork() {
 }
 
 async function connectWallet() {
-  await delay(10000);
+  await delay(10);
   await awaitAndClickOnImage("./images/connect-wallet-button.png", 30);
-  await delay(10000);
+  await delay(10);
   await awaitAndClickOnImage("./images/metamask-fox.png", 30);
-  await delay(10000);
+  await delay(10);
   await awaitAndClickOnImage("./images/assinar-button.png", 30);
 }
 
@@ -196,13 +177,13 @@ async function restartGame() {
       if (os.platform() === "darwin")
         await awaitAndClickOnImage("./images/mac-restart-button.png", 30);
       
-      await delay(1000 * 7);
+      await delay(7);
       if (await isImagePresent("./images/connect-wallet-button.png"))
         await connectWallet();
       else await awaitAndClickOnImage("./images/play-button.png", 30);
 
       //await mouse.move([{ x: 0, y: 0 }]);
-      await delay(4000);
+      await delay(4);
       if (await isImagePresent("./images/ok-button.png", 0.92)) {
         console.log("Game error. Restarting...");
         continue;
@@ -219,7 +200,7 @@ async function restartGame() {
 
 async function checkingIfGameIsInMainScreen() {
   try {
-    await delay(1000 * 3);
+    await delay(3);
     if (await isImagePresent("./images/start-pve-button.png", 0.92)) {
       console.log("Game is in main screen.");
       return true;
@@ -235,22 +216,18 @@ async function checkingIfGameIsInMainScreen() {
 }
 
 async function checkForWrongWindow() {
-  await delay(2000);
-  let x = 0;
-  while (x < 3) {
-    if (await isImagePresent("./images/close-button.png", 0.92)) {
-      await awaitAndClickOnImage("./images/close-button.png", 4, 0.92);
-      await delay(1000 * 3);
-    }
-    if (await isImagePresent("./images/back-to-menu-button.png", 0.92)) {
-      await awaitAndClickOnImage("./images/back-to-menu-button.png", 4, 0.92);
-      await delay(1000 * 3);
-    }
-    if (await isImagePresent("./images/ok-button.png", 0.92)) {
-      await awaitAndClickOnImage("./images/ok-button.png", 4, 0.92);
-      await delay(1000 * 3);
-    }
-    x++;
+  await delay(2);
+  if (await isImagePresent("./images/close-button.png", 0.92)) {
+    await awaitAndClickOnImage("./images/close-button.png", 4, 0.92);
+    await delay(3);
+  }
+  if (await isImagePresent("./images/back-to-menu-button.png", 0.92)) {
+    await awaitAndClickOnImage("./images/back-to-menu-button.png", 4, 0.92);
+    await delay(3);
+  }
+  if (await isImagePresent("./images/ok-button.png", 0.92)) {
+    await awaitAndClickOnImage("./images/ok-button.png", 4, 0.92);
+    await delay(3);
   }
 }
 
@@ -265,15 +242,15 @@ async function checkForWrongWindow() {
         await restartGame();
       }
       
+      logAction("Putting heroes to work");
+      await putHeroesToWork();
+
       logAction("Starting PVE");
       await startPve();
 
-      while (true) {
-        logAction("Putting heroes to work");
-        await putHeroesToWork();
-        logAction("Waiting for new map");
-        await playGame();
-      }
+      logAction("Waiting for new map");
+      await playGame();
+
     } catch (e) {
       console.log(e);
       await checkForWrongWindow();
