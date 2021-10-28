@@ -133,6 +133,7 @@ async function playGame() {
       );
     } catch (e) {
       console.log("New map button wasn't found. Checking heroes..");
+      await checkForWrongWindow();
       return;
     }
     await delay(1);
