@@ -32,7 +32,8 @@ async function awaitAndClickOnImage(
   imagePath,
   timeoutInSeconds,
   confidence = 0.9,
-  corner = false
+  xCorner = false,
+  yCorner = false
 ) {
   console.log("Awaiting for:", imagePath);
   console.log(`Time-out in ${timeoutInSeconds} seconds`);
@@ -42,8 +43,8 @@ async function awaitAndClickOnImage(
   const x = randomInteger(1, 3) + element.left + element.width / 2;
   const y = randomInteger(1, 3) + element.top + element.height / 2;
 
-  const realX = corner ? x - 13 : x;
-  const realY = corner ? y - 13 : y;
+  const realX = xCorner ? x - 13 : x;
+  const realY = yCorner ? y - 13 : y;
 
   await mouse.move([
     {
@@ -80,9 +81,10 @@ async function makeHeroesGoToWork() {
         "./images/hero-go-work-button.png",
         3,
         0.96,
-        true
+        true,
+        false
       );
-      await delay(0.4);
+      await delay(0.8);
     }
   } catch (error) {
     throw new Error("Restart game flow");
