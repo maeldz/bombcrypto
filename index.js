@@ -99,10 +99,10 @@ async function dragDownHeroSelection() {
         confidence: 0.9,
       }
     );
-  
+
     const left = element.left + 100;
     const top = element.top + 10;
-  
+
     await mouse.move([
       {
         x: left,
@@ -144,8 +144,10 @@ async function playGame() {
 
 async function putHeroesToWork() {
   await delay(1);
-  await awaitAndClickOnImage("./images/back-to-menu-button.png", 20);
-  await delay(1);
+  if (await isImagePresent("./images/connect-wallet-button.png")) {
+    await awaitAndClickOnImage("./images/back-to-menu-button.png", 20);
+    await delay(1);
+  }
   await awaitAndClickOnImage("./images/heroes-menu-button.png", 10, 0.92);
   await delay(1);
 
@@ -173,11 +175,11 @@ async function restartGame() {
     try {
       await keyboard.pressKey(Key.LeftControl, Key.LeftShift, Key.R)
       await keyboard.releaseKey(Key.LeftControl, Key.LeftShift, Key.R)
-      
+
       // refresh page on MAC
       if (os.platform() === "darwin")
         await awaitAndClickOnImage("./images/mac-restart-button.png", 30);
-      
+
       await delay(7);
       if (await isImagePresent("./images/connect-wallet-button.png"))
         await connectWallet();
@@ -237,12 +239,12 @@ async function checkForWrongWindow() {
     try {
       logAction("Checking if game is on main screen");
       const isMainScreen = await checkingIfGameIsInMainScreen();
-      
+
       if (!isMainScreen) {
         logAction("Restarting game");
         await restartGame();
       }
-      
+
       logAction("Putting heroes to work");
       await putHeroesToWork();
 
